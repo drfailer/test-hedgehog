@@ -33,7 +33,7 @@ class MatrixProductTask: public hh::AbstractTask<1, ProductBlockData<Type>, Vect
 
         for (size_t i = ibegin; i < iend; ++i) {
             for (size_t j = jbegin; j < jend; ++j) {
-                resultData[i] += matrixData[i * matrixWidth + j] * vectorData[j];
+                resultData[i] += matrixData[i * matrixWidth + j] * vectorData[j]; // need a lock ?
             }
         }
         this->addResult(resultBlocData);
