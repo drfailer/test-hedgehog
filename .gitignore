@@ -1,2 +1,3 @@
 build
 .cache/clangd/index
+matrix-vector-product/.cache/clangd/index
