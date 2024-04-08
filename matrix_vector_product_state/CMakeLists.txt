@@ -1,0 +1,5 @@
+add_executable(matrix_vector_product_state
+		matrix_vector_product_state.cc)
+
+target_link_libraries(matrix_vector_product_state ${Hedgehog_LIBRARIES})
+target_include_directories(matrix_vector_product_state PUBLIC ${Hedgehog_INCLUDE_DIR})

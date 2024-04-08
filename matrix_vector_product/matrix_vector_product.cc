@@ -30,8 +30,8 @@ MatrixType *createVector(size_t size) {
 }
 
 int main(int, char**) {
-    constexpr size_t matrixWidth = 10;
-    constexpr size_t matrixHeight = 10;
+    constexpr size_t matrixWidth = 5;
+    constexpr size_t matrixHeight = 5;
     constexpr size_t vectorSize = matrixWidth;
     constexpr size_t blockSize = 3;
     constexpr size_t numberThreads = 3;
