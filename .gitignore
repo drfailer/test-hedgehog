@@ -1,3 +1,4 @@
 build
 .cache/clangd/index
 matrix-vector-product/.cache/clangd/index
+matrix-vector-product/compile_commands.json
