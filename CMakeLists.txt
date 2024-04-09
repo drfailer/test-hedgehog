@@ -39,3 +39,4 @@ file(GLOB tclap_headers "../../../utils/tclap/*.h")
 # Add tutorials target
 add_subdirectory(matrix_vector_product)
 add_subdirectory(matrix_vector_product_state)
+add_subdirectory(game_of_life)
