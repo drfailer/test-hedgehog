@@ -52,35 +52,37 @@ int main(int, char**) {
     std::cout << "vector:" << std::endl;
     std::cout << *vector << std::endl;
 
-    auto splitMatrix = std::make_shared<SplitMatrixTask<MatrixType, Matrix>>();
-    auto splitVector = std::make_shared<SplitVectorTask<MatrixType, Vector>>();
-    auto splitResult = std::make_shared<SplitVectorTask<MatrixType, Result>>();
-
     hh::Graph<3,
         MatrixData<MatrixType, Matrix>,
         VectorData<MatrixType, Vector>,
         VectorData<MatrixType, Result>,
         VectorBlockData<MatrixType, Result>> graph("Matrix vector product");
 
-  auto inputState = std::make_shared<BlockState<MatrixType>>(matrix->getNumBlocksRows(), matrix->getNumBlocksCols(), matrix->getBlockSize());
-  auto inputstateManager =
-      std::make_shared<
-          hh::StateManager<3,
-              MatrixBlockData<MatrixType, Matrix>,
-              VectorBlockData<MatrixType, Vector>,
-              VectorBlockData<MatrixType, Result>,
-              ProductBlockData<MatrixType>>>(inputState, "Block State Manager");
-
+    auto splitMatrix = std::make_shared<SplitMatrixTask<MatrixType, Matrix>>();
+    auto splitVector = std::make_shared<SplitVectorTask<MatrixType, Vector>>();
+    auto splitResult = std::make_shared<SplitVectorTask<MatrixType, Result>>();
     auto productTask = std::make_shared<MatrixProductTask<MatrixType>>("product", numberThreads);
+
+    auto inputState = std::make_shared<BlockState<MatrixType>>(matrix->getNumBlocksRows(), matrix->getNumBlocksCols(), matrix->getBlockSize());
+    auto inputstateManager =
+        std::make_shared<
+            hh::StateManager<3,
+                MatrixBlockData<MatrixType, Matrix>,
+                VectorBlockData<MatrixType, Vector>,
+                VectorBlockData<MatrixType, Result>,
+                ProductBlockData<MatrixType>>>(inputState, "Block State Manager");
+
 
     graph.inputs(splitMatrix);
     graph.inputs(splitVector);
     graph.inputs(splitResult);
 
+    // link split tasks
     graph.edges(splitMatrix, inputstateManager);
     graph.edges(splitVector, inputstateManager);
     graph.edges(splitResult, inputstateManager);
 
+    // link product task
     graph.edges(inputstateManager, productTask);
 
     graph.outputs(productTask);

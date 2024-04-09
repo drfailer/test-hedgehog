@@ -24,6 +24,11 @@ class SplitVectorTask: public hh::AbstractTask<1, VectorData<Type, Id>, VectorBl
             }
         }
     }
+
+    /* std::shared_ptr<hh::AbstractTask<1, VectorData<Type, Id>, VectorBlockData<Type, Id>>> */
+    /* copy() override { */
+    /*     return std::make_shared<SplitVectorTask>(); */
+    /* } */
 };
 
 #endif

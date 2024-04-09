@@ -13,11 +13,11 @@ class BlockState: public hh::AbstractState<3,
     MatrixBlockData<Type, Matrix>, VectorBlockData<Type, Vector>, VectorBlockData<Type, Result>,
     ProductBlockData<Type>> {
   public:
-      BlockState(size_t width, size_t height, size_t blockSize):
-          width_(width), height_(height), blockSize_(blockSize),
-          matrix_(width * height, nullptr),
-          vector_(width, nullptr),
-          result_(height, nullptr)
+      BlockState(size_t nbRows, size_t nbCols, size_t blockSize):
+          nbRows_(nbRows), nbCols_(nbCols), blockSize_(blockSize),
+          matrix_(nbRows * nbCols, nullptr),
+          vector_(nbRows, nullptr),
+          result_(nbCols, nullptr)
         {}
 
       void execute(std::shared_ptr<MatrixBlockData<Type, Matrix>> matrixBlock) {
@@ -83,7 +83,9 @@ class BlockState: public hh::AbstractState<3,
     std::vector<std::shared_ptr<VectorBlockData<Type, Result>>> result_ = {};
 
     std::shared_ptr<MatrixBlockData<Type, Matrix>> mat(size_t row, size_t col) {
-        return matrix_[(row / blockSize_) * width_ + col / blockSize_];
+        size_t rIdx = row / blockSize_;
+        size_t cIdx = col / blockSize_;
+        return matrix_[rIdx * nbRows_ + cIdx];
     }
 
     std::shared_ptr<VectorBlockData<Type, Vector>> vec(size_t row) {
@@ -95,7 +97,9 @@ class BlockState: public hh::AbstractState<3,
     }
 
     void mat(std::shared_ptr<MatrixBlockData<Type, Matrix>> ptr) {
-        matrix_[(ptr->getBlockRow() / blockSize_) * width_ + ptr->getBlockCol() / blockSize_] = ptr;
+        size_t rIdx = ptr->getBlockRow() / blockSize_;
+        size_t cIdx = ptr->getBlockCol() / blockSize_;
+        matrix_[rIdx * nbRows_ + cIdx] = ptr;
     }
 
     void vec(std::shared_ptr<VectorBlockData<Type, Vector>> ptr) {
@@ -103,15 +107,25 @@ class BlockState: public hh::AbstractState<3,
     }
 
     void res(std::shared_ptr<VectorBlockData<Type, Result>> ptr) {
-        result_[ptr->getBlockRow() / blockSize_] = ptr;
+        result_[ptr->getBlockCol() / blockSize_] = ptr;
     }
 
-    void resetmat(size_t row, size_t col) { matrix_[(row / blockSize_) * width_ + col / blockSize_] = nullptr; }
-    void resetvec(size_t row) { vector_[row / blockSize_] = nullptr; }
-    void resetres(size_t col) { result_[col / blockSize_] = nullptr; }
+    void resetmat(size_t row, size_t col) {
+        size_t rIdx = row / blockSize_;
+        size_t cIdx = col / blockSize_;
+        matrix_[rIdx * nbRows_ + cIdx] = nullptr;
+    }
 
-    size_t width_ = 0;
-    size_t height_ = 0;
+    void resetvec(size_t row) {
+        vector_[row / blockSize_] = nullptr;
+    }
+
+    void resetres(size_t col) {
+        result_[col / blockSize_] = nullptr;
+    }
+
+    size_t nbRows_ = 0;
+    size_t nbCols_ = 0;
     size_t blockSize_ = 0;
 };
 

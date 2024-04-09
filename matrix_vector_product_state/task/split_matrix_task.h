@@ -24,6 +24,11 @@ class SplitMatrixTask: public hh::AbstractTask<1, MatrixData<Type, Id>, MatrixBl
             }
         }
     }
+
+    /* std::shared_ptr<hh::AbstractTask<1, MatrixData<Type, Id>, MatrixBlockData<Type, Id>>> */
+    /* copy() override { */
+    /*     return std::make_shared<SplitMatrixTask>(); */
+    /* } */
 };
 
 #endif

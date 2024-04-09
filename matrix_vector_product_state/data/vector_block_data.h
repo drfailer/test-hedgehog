@@ -9,7 +9,7 @@
 template <typename Type, Ids Id>
 class VectorBlockData {
   public:
-    VectorBlockData(size_t blockSize, size_t blockRow, size_t blockCol, std::shared_ptr<VectorData<Type, Id>> vectorData):
+    VectorBlockData(size_t blockSize, size_t blockRow, size_t blockCol, std::shared_ptr<VectorData<Type, Id>> const& vectorData):
         blockSize_(blockSize), blockRow_(blockRow), blockCol_(blockCol),
         vectorSize_(vectorData->getSize()),
         vectorData_(vectorData->getData()) {}
