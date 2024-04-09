@@ -9,8 +9,8 @@
 template <typename Type>
 class UpdateGridState: public hh::AbstractState<1, GridBlock<Type>, Grid<Type>> {
   public:
-    UpdateGridState(size_t nbBlocks, std::shared_ptr<Grid<Type>> grid):
-        nbTreatedBlock_(nbBlocks), result_(grid) {}
+    UpdateGridState(size_t nbBlocks, std::shared_ptr<Grid<Type>> grid, std::shared_ptr<Grid<Type>> result):
+        nbBlocks_(nbBlocks), nbTreatedBlock_(nbBlocks), grid_(grid), result_(result) {}
 
     void execute(std::shared_ptr<GridBlock<Type>>) override {
         --nbTreatedBlock_;
@@ -20,7 +20,8 @@ class UpdateGridState: public hh::AbstractState<1, GridBlock<Type>, Grid<Type>> 
     }
 
     void clean() override {
-        nbTreatedBlock_ = 0;
+        nbTreatedBlock_ = nbBlocks_;
+        result_->swap(grid_.get());
     }
 
     void nbTreatedBlock(size_t nbTreatedBlock) {
@@ -28,7 +29,9 @@ class UpdateGridState: public hh::AbstractState<1, GridBlock<Type>, Grid<Type>> 
     }
 
   private:
+    size_t nbBlocks_ = 0;
     size_t nbTreatedBlock_ = 0;
+    std::shared_ptr<Grid<Type>> grid_ = nullptr;
     std::shared_ptr<Grid<Type>> result_ = nullptr;
 };
 
