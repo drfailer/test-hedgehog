@@ -15,6 +15,7 @@ int main(int, char**) {
     constexpr size_t gridWidth = 10;
     constexpr size_t blockSize = 3;
     constexpr size_t nbThreads = 3;
+    constexpr size_t nbIteration = 4;
 
     GridType *gridMem = new GridType[gridHeight * gridWidth]();
     GridType *resultMem = new GridType[gridHeight * gridWidth]();
@@ -51,11 +52,16 @@ int main(int, char**) {
     GOLGraph.outputs(updateSateManager);
 
     GOLGraph.executeGraph();
-    GOLGraph.pushData(grid);
+    for (size_t iteration = 0; iteration < nbIteration; ++iteration) {
+        GOLGraph.pushData(grid);
+        auto test = GOLGraph.getBlockingResult();
+        std::cout << *result << std::endl;
+        GOLGraph.cleanGraph();
+        result->swap(grid.get());
+        updateGridState->nbTreatedBlock(grid->nbRowBlocks() * grid->nbColBlocks());
+    }
     GOLGraph.finishPushingData();
     GOLGraph.waitForTermination();
-
-    std::cout << *result << std::endl;
 
     delete[] gridMem;
     delete[] resultMem;

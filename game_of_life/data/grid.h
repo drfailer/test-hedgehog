@@ -37,6 +37,10 @@ class Grid {
         return os;
     }
 
+    void swap(Grid<Type> *other) {
+        std::swap(other->grid_, this->grid_);
+    }
+
   private:
     size_t width_ = 0;
     size_t height_ = 0;

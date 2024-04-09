@@ -13,11 +13,18 @@ class UpdateGridState: public hh::AbstractState<1, GridBlock<Type>, Grid<Type>> 
         nbTreatedBlock_(nbBlocks), result_(grid) {}
 
     void execute(std::shared_ptr<GridBlock<Type>>) override {
+        --nbTreatedBlock_;
         if (nbTreatedBlock_ == 0) {
             this->addResult(result_);
-        } else {
-            --nbTreatedBlock_;
         }
+    }
+
+    void clean() override {
+        nbTreatedBlock_ = 0;
+    }
+
+    void nbTreatedBlock(size_t nbTreatedBlock) {
+        this->nbTreatedBlock_ = nbTreatedBlock;
     }
 
   private:
