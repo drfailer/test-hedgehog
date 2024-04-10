@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake-mo
 set(Hedgehog_INCLUDE_DIR ./lib/hedgehog/)
 
 # added tclap
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/tclap/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/)
 
 # Need to defined variable Hedgehog_INCLUDE_DIR to the hedgehog path
 # hedgehog

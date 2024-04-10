@@ -1,30 +1,14 @@
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <hedgehog/hedgehog.h>
 #include <vector>
 
 #include "data/grid.h"
-#include "data/grid_block.h"
 #include "graph/gol_graph.h"
-#include "task/split_grid_task.h"
-#include "task/update_block_task.h"
-#include "state/update_grid_state.h"
+#include "utils.h"
 
 using GridType = bool;
-
-double avgTimers(std::vector<long> const &timers) {
-    return (double) std::accumulate(timers.cbegin(), timers.cend(), (long) 0) / (double) timers.size();
-}
-
-double stdevTimers(std::vector<long> const &timers) {
-    double avg = avgTimers(timers),
-                 temp = 0;
-
-    for (auto const &timer : timers) {
-        temp += (((double) timer - avg) * ((double) timer - avg));
-    }
-    return std::sqrt(temp / (double) timers.size());
-}
 
 void setupGrid(GridType *grid) {
     grid[0] = true;
@@ -42,60 +26,59 @@ void setupGrid(GridType *grid) {
     grid[4*10 + 6] = true;
 }
 
-int main(int, char**) {
-    constexpr size_t gridHeight = 10;
-    constexpr size_t gridWidth = 10;
-    constexpr size_t blockSize = 3;
-    constexpr size_t nbThreads = 3;
-    constexpr size_t nbIteration = 5;
-    constexpr bool print = true;
+int main(int argc, char** argv) {
+    Config config;
     std::vector<long> timers;
 
-    GridType *gridMem = new GridType[gridHeight * gridWidth]();
-    GridType *resultMem = new GridType[gridHeight * gridWidth]();
+    parseCmdArgs(argc, argv, config);
 
-    // add some cells in the grid
+    GridType *gridMem = new GridType[config.gridHeight * config.gridWidth]();
+    GridType *resultMem = new GridType[config.gridHeight * config.gridWidth]();
     setupGrid(gridMem);
 
-    auto grid = std::make_shared<Grid<GridType>>(gridWidth, gridHeight, blockSize, gridMem);
-    auto result = std::make_shared<Grid<GridType>>(gridWidth, gridHeight, blockSize, resultMem);
+    auto grid = std::make_shared<Grid<GridType>>(config.gridWidth, config.gridHeight, config.blockSize, gridMem);
+    auto result = std::make_shared<Grid<GridType>>(config.gridWidth, config.gridHeight, config.blockSize, resultMem);
 
-    std::cout << "start:" << std::endl;
-    std::cout << *grid << std::endl;
+    if (config.printGrid) {
+        std::cout << "start:" << std::endl;
+        std::cout << *grid << std::endl;
+    }
 
-    GOLGraph<GridType> graph(grid, result, nbThreads);
+    GOLGraph<GridType> graph(grid, result, config.nbThreads);
 
     graph.executeGraph();
-    for (size_t iteration = 0; iteration < nbIteration; ++iteration) {
+    for (size_t iteration = 0; iteration < config.nbEpocs; ++iteration) {
         std::chrono::time_point<std::chrono::system_clock> begin = std::chrono::system_clock::now(), end;
 
-        // run the simulation for 1 iteration
         graph.pushData(grid);
         *(std::get<std::shared_ptr<Grid<GridType>>>(*graph.getBlockingResult()));
-
-        // print the current grid if required
-        if (print) {
-            std::cout << *result << std::endl;
+        if (config.animation) { animate(result); } // animate
+        graph.cleanGraph();
+        if (!config.animation) { // update timers
+            end = std::chrono::system_clock::now();
+            timers.push_back(std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
         }
 
-        // clean
-        graph.cleanGraph();
-
-        // update the timers
-        end = std::chrono::system_clock::now();
-        timers.push_back(std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+        if (iteration == 0 && config.generateGraph) {
+            graph.createDotFile("golGraph.dot",
+                    hh::ColorScheme::EXECUTION, hh::StructureOptions::ALL);
+        }
     }
     graph.finishPushingData();
     graph.waitForTermination();
 
-    std::cout << "last iteration:" << std::endl;
-    std::cout << *grid << std::endl;
+    if (config.printGrid) {
+        std::cout << "last iteration:" << std::endl;
+        std::cout << *grid << std::endl;
+    }
 
-    std::cout << "grid: " << gridWidth << "x" << gridHeight << std::endl
-              << "block size: " << blockSize << std::endl
-              << "avg timer: " << avgTimers(timers) << std::endl
-              << "stdev timer: " << stdevTimers(timers) << std::endl
-              << "avg timer / size: " << (avgTimers(timers) / static_cast<double>(gridWidth * gridHeight)) << "\n";
+    if (!config.animation) { // this is useless in animation mode
+        std::cout << "grid: " << config.gridWidth << "x" << config.gridHeight << std::endl
+            << "block size: " << config.blockSize << std::endl
+            << "avg timer: " << avgTimers(timers) << std::endl
+            << "stdev timer: " << stdevTimers(timers) << std::endl
+            << "avg timer / size: " << (avgTimers(timers) / static_cast<double>(config.gridWidth * config.gridHeight)) << "\n";
+    }
 
     delete[] gridMem;
     delete[] resultMem;
