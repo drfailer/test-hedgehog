@@ -18,6 +18,7 @@ struct Config {
     bool animation;
     bool printGrid;
     bool generateGraph;
+    double population;
 };
 
 

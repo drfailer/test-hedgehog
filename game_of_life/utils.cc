@@ -66,10 +66,12 @@ void parseCmdArgs(int argc, char **argv, Config &config) {
         cmd.add(nbEpocsArg);
         TCLAP::ValueArg<bool> animateArg("a", "animate", "Animate the simulation (no perf measurement)", false, false, "bool");
         cmd.add(animateArg);
-        TCLAP::ValueArg<bool> printArg("p", "print", "Print the starting and final grid.", false, false, "bool");
+        TCLAP::ValueArg<bool> printArg("d", "display", "Display the starting and final grid.", false, false, "bool");
         cmd.add(printArg);
         TCLAP::ValueArg<bool> graphArg("g", "graph", "Generate the dot file at the end of the first epoch.", false, false, "bool");
         cmd.add(graphArg);
+        TCLAP::ValueArg<double> populationArg("p", "population", "Percentage of living cell at start", false, 0.3, "double");
+        cmd.add(populationArg);
         cmd.parse(argc, argv);
 
         auto size = parseSize(sizeArg.getValue());
@@ -80,6 +82,7 @@ void parseCmdArgs(int argc, char **argv, Config &config) {
         config.nbEpocs = nbEpocsArg.getValue();
         config.animation = animateArg.getValue();
         config.printGrid = printArg.getValue();
+        config.population = populationArg.getValue();
     } catch (TCLAP::ArgException &e)  // catch any exceptions
     { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 }

@@ -3,6 +3,7 @@
 #include <memory>
 #include <hedgehog/hedgehog.h>
 #include <vector>
+#include <random>
 
 #include "data/grid.h"
 #include "graph/gol_graph.h"
@@ -10,20 +11,19 @@
 
 using GridType = bool;
 
-void setupGrid(GridType *grid) {
-    grid[0] = true;
-    grid[1] = true;
-    grid[2] = true;
-    grid[10 + 0] = true;
-    grid[10 + 1] = true;
-    grid[10 + 2] = true;
-    grid[20 + 0] = true;
-    grid[20 + 1] = true;
-    grid[20 + 2] = true;
+void setupGrid(GridType *grid, size_t gridWidth, size_t gridHeight, double population) {
+    // Mersenne Twister Random Generator
+    std::random_device dv;
+    std::mt19937 gen(dv());
+    std::uniform_real_distribution<> dis(0, 1);
 
-    grid[4*10 + 4] = true;
-    grid[4*10 + 5] = true;
-    grid[4*10 + 6] = true;
+    for (size_t i = 0; i < gridHeight; ++i) {
+        for (size_t j = 0; j < gridWidth; ++j) {
+            if (dis(gen) < population) {
+                grid[i * gridWidth + j] = true;
+            }
+        }
+    }
 }
 
 int main(int argc, char** argv) {
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
     GridType *gridMem = new GridType[config.gridHeight * config.gridWidth]();
     GridType *resultMem = new GridType[config.gridHeight * config.gridWidth]();
-    setupGrid(gridMem);
+    setupGrid(gridMem, config.gridWidth, config.gridHeight, config.population);
 
     auto grid = std::make_shared<Grid<GridType>>(config.gridWidth, config.gridHeight, config.blockSize, gridMem);
     auto result = std::make_shared<Grid<GridType>>(config.gridWidth, config.gridHeight, config.blockSize, resultMem);
