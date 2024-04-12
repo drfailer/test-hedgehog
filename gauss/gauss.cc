@@ -62,7 +62,7 @@ int main(int, char**) {
     std::cout << matrix << std::endl;
     std::cout << vector << std::endl;
 
-    pivotGraph.createDotFile("gausPivot.dot");
+    pivotGraph.createDotFile("gausPivot.dot", hh::ColorScheme::EXECUTION, hh::StructureOptions::ALL);
 
     delete[] matrixMem;
     delete[] vectorMem;

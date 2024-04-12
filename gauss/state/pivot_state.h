@@ -13,13 +13,13 @@
 template <typename Type>
 class PivotState: public hh::AbstractState<
                             3,
-                            MatrixLine<Type, Line>, MatrixLine<Type, DividedLine>, MatrixLine<Type, SubstractedLine>,
+                            MatrixLine<Type, Line>, MatrixLine<Type, PivotLine>, MatrixLine<Type, SubstractedLine>,
                             MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, MatrixLine<Type, ResultLine>> {
   public:
     PivotState(size_t nbLines):
         hh::AbstractState<
             3,
-            MatrixLine<Type, Line>, MatrixLine<Type, DividedLine>, MatrixLine<Type, SubstractedLine>,
+            MatrixLine<Type, Line>, MatrixLine<Type, PivotLine>, MatrixLine<Type, SubstractedLine>,
             MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, MatrixLine<Type, ResultLine>>(),
         totalNbLines_(nbLines) {}
 
@@ -43,7 +43,7 @@ class PivotState: public hh::AbstractState<
 
     // we get the pivot line with the pivot coef equal to 2. This line is
     // treated so it's sent as a result line.
-    void execute(std::shared_ptr<MatrixLine<Type, DividedLine>> line) override {
+    void execute(std::shared_ptr<MatrixLine<Type, PivotLine>> line) override {
         this->addResult(std::make_shared<MatrixLine<Type, ResultLine>>(line));
         ++currentPivotIdx_;
     }
