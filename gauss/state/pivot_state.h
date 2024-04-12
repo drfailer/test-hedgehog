@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <hedgehog/hedgehog.h>
 #include <memory>
+#include <vector>
 #include "../data/matrix_line.h"
 #include "../data/ids.h"
 
@@ -25,8 +26,10 @@ class PivotState: public hh::AbstractState<
 
     // treat lines from split matrix task
     void execute(std::shared_ptr<MatrixLine<Type, Line>> line) override {
-        if (line->row() == currentPivotIdx_) {
-            this->addResult(std::make_shared<MatrixLine<Type, PivotLine>>(line));
+        if (line->row() == 0) {
+            currentPivotLine_ = std::make_shared<MatrixLine<Type, PivotLine>>(line);
+            nbLinesTreated_ = totalNbLines_ - 1;
+            this->addResult(currentPivotLine_);
         } else {
             this->addResult(line);
         }
@@ -34,10 +37,18 @@ class PivotState: public hh::AbstractState<
 
     // we get the line to which with substracted the pivot line
     void execute(std::shared_ptr<MatrixLine<Type, SubstractedLine>> line) override {
-        if (line->row() == currentPivotIdx_) {
-            this->addResult(std::make_shared<MatrixLine<Type, PivotLine>>(line));
-        } else if (line->row() > currentPivotIdx_) {
-            this->addResult(std::make_shared<MatrixLine<Type, Line>>(line));
+        --nbLinesTreated_;
+        substractedLines_.push_back(line);
+
+        if (nbLinesTreated_ == 0) {
+            nbLinesTreated_ = totalNbLines_ - currentPivotIdx_ - 1;
+            for (auto subline : substractedLines_) {
+                if (subline->row() == currentPivotIdx_) {
+                    this->addResult(std::make_shared<MatrixLine<Type, PivotLine>>(subline));
+                } else {
+                    this->addResult(std::make_shared<MatrixLine<Type, Line>>(subline));
+                }
+            }
         }
     }
 
@@ -53,6 +64,9 @@ class PivotState: public hh::AbstractState<
   private:
     size_t currentPivotIdx_ = 0;
     size_t totalNbLines_ = 0;
+    size_t nbLinesTreated_ = 0;
+    std::shared_ptr<MatrixLine<Type, PivotLine>> currentPivotLine_ = nullptr;
+    std::vector<std::shared_ptr<MatrixLine<Type, SubstractedLine>>> substractedLines_ = {};
 };
 
 #endif

@@ -39,9 +39,7 @@ MatrixType* setupVector(size_t size) {
 int main(int, char**) {
     constexpr size_t matrixWidth = 3;
     constexpr size_t matrixHeight = 3;
-    constexpr size_t nbThreads = 2;
-
-    static_assert(nbThreads < matrixHeight, "nbThreads should be infirior to the number of equations.");
+    constexpr size_t nbThreads = 3;
 
     MatrixType *matrixMem = setupMatrix(matrixWidth, matrixHeight);
     MatrixType *vectorMem = setupVector(matrixHeight);
