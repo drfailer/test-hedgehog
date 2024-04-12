@@ -27,9 +27,8 @@ class PivotState: public hh::AbstractState<
     // treat lines from split matrix task
     void execute(std::shared_ptr<MatrixLine<Type, Line>> line) override {
         if (line->row() == 0) {
-            currentPivotLine_ = std::make_shared<MatrixLine<Type, PivotLine>>(line);
             nbLinesTreated_ = totalNbLines_ - 1;
-            this->addResult(currentPivotLine_);
+            this->addResult(std::make_shared<MatrixLine<Type, PivotLine>>(line));
         } else {
             this->addResult(line);
         }
@@ -65,7 +64,6 @@ class PivotState: public hh::AbstractState<
     size_t currentPivotIdx_ = 0;
     size_t totalNbLines_ = 0;
     size_t nbLinesTreated_ = 0;
-    std::shared_ptr<MatrixLine<Type, PivotLine>> currentPivotLine_ = nullptr;
     std::vector<std::shared_ptr<MatrixLine<Type, SubstractedLine>>> substractedLines_ = {};
 };
 
