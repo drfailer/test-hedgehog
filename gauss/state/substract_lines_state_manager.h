@@ -5,16 +5,14 @@
 #include "substract_lines_state.h"
 
 template <typename Type>
-class SubstractLinesStateManager: public hh::StateManager<
-                                  2,
-                                  MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>,
-                                  SubstractLinesOutType<Type>> {
+class SubstractLinesStateManager: public hh::StateManager<SubstractLinesStateInNb,
+                                                          SubstractLinesStateInput,
+                                                          SubstractLinesStateOutput> {
   public:
       SubstractLinesStateManager(std::shared_ptr<SubstractLinesState<Type>> const& state):
-          hh::StateManager<
-            2,
-            MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>,
-            SubstractLinesOutType<Type>>(state, "Substract lines state manager") {}
+          hh::StateManager<SubstractLinesStateInNb,
+                           SubstractLinesStateInput,
+                           SubstractLinesStateOutput>(state, "Substract lines state manager") {}
 
     [[nodiscard]] bool canTerminate() const override {
         this->state()->lock();

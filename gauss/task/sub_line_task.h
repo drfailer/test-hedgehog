@@ -9,11 +9,15 @@
 template <typename Type>
 using SubLineInType = std::pair<std::shared_ptr<MatrixLine<Type, PivotLine>>, std::shared_ptr<MatrixLine<Type, Line>>>;
 
+#define SubLineTaskInNb 1
+#define SubLineTaskInput SubLineInType<Type>
+#define SubLineTaskOutput MatrixLine<Type, SubstractedLine>
+
 template <typename Type>
-class SubLineTask: public hh::AbstractTask<1, SubLineInType<Type>, MatrixLine<Type, SubstractedLine>> {
+class SubLineTask: public hh::AbstractTask<SubLineTaskInNb, SubLineTaskInput, SubLineTaskOutput> {
   public:
     SubLineTask(size_t nbThreads):
-        hh::AbstractTask<1, SubLineInType<Type>, MatrixLine<Type, SubstractedLine>>("Substract lines", nbThreads) {}
+        hh::AbstractTask<SubLineTaskInNb, SubLineTaskInput, SubLineTaskOutput>("Substract lines task", nbThreads) {}
 
     void execute(std::shared_ptr<SubLineInType<Type>> lines) override { // L2 = L2 - L1
         std::shared_ptr<MatrixLine<Type, PivotLine>> line1 = lines->first;
@@ -30,7 +34,7 @@ class SubLineTask: public hh::AbstractTask<1, SubLineInType<Type>, MatrixLine<Ty
         this->addResult(result);
     }
 
-    std::shared_ptr<hh::AbstractTask<1, SubLineInType<Type>, MatrixLine<Type, SubstractedLine>>>
+    std::shared_ptr<hh::AbstractTask<SubLineTaskInNb, SubLineTaskInput, SubLineTaskOutput>>
     copy() override {
         return std::make_shared<SubLineTask<Type>>(this->numberThreads());
     }

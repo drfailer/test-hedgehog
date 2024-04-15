@@ -12,13 +12,17 @@
 template <typename Type>
 using SubstractLinesOutType = std::pair<std::shared_ptr<MatrixLine<Type, PivotLine>>, std::shared_ptr<MatrixLine<Type, Line>>>;
 
+#define SubstractLinesStateInNb 2
+#define SubstractLinesStateInput MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>
+#define SubstractLinesStateOutput SubstractLinesOutType<Type>
+
 // This state handle the substraction of the pivot lines to all the lines
 // underneath.
 template <typename Type>
-class SubstractLinesState: public hh::AbstractState<2, MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, SubstractLinesOutType<Type>> {
+class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, SubstractLinesStateInput, SubstractLinesStateOutput> {
   public:
     SubstractLinesState(size_t nbLines):
-        hh::AbstractState<2, MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, SubstractLinesOutType<Type>>(),
+        hh::AbstractState<SubstractLinesStateInNb, SubstractLinesStateInput, SubstractLinesStateOutput>(),
         totalNbLines_(nbLines),
         nbLinesTreated_((nbLines * (nbLines - 1)) / 2) { }
 
