@@ -17,7 +17,7 @@ class Vector {
 
     friend std::ostream& operator<<(std::ostream& os, const Vector& vector) {
         for (size_t i = 0; i < vector.size_; ++i) {
-            std::cout << vector.ptr_[i] << std::endl;
+            os << vector.ptr_[i] << std::endl;
         }
         return os;
     }

@@ -19,9 +19,9 @@ class Matrix {
     friend std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
         for (size_t i = 0; i < matrix.height_; ++i) {
             for (size_t j = 0; j < matrix.width_; ++j) {
-                std::cout << matrix.ptr_[i * matrix.width_ + j] << " ";
+                os << matrix.ptr_[i * matrix.width_ + j] << " ";
             }
-            std::cout << std::endl;
+            os << std::endl;
         }
         return os;
     }
