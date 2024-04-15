@@ -12,7 +12,7 @@ using MatrixType = double;
 void generateRandomProblem(size_t nbVariables, MatrixType *matrix, MatrixType *vector, MatrixType *variables) {
     std::random_device dv;
     std::mt19937 gen(dv());
-    std::uniform_real_distribution<> dis(-100, 100);
+    std::uniform_int_distribution<> dis(-10, 10);
     size_t width = nbVariables, height = nbVariables;
 
     for (size_t i = 0; i < nbVariables; ++i) {
@@ -28,6 +28,22 @@ void generateRandomProblem(size_t nbVariables, MatrixType *matrix, MatrixType *v
         }
         vector[i] = sum;
     }
+}
+
+bool isIdentity(Matrix<MatrixType> const& matrix, MatrixType precision) {
+    for (size_t i = 0; i < matrix.height(); ++i) {
+        for (size_t j = 0; j < matrix.width(); ++j) {
+            bool isOne = (1 - precision) <= matrix.get()[i * matrix.width() + j]
+                      && matrix.get()[i * matrix.width() + j] <= (1 + precision);
+            bool isZero = -precision <= matrix.get()[i * matrix.width() + j]
+                       && matrix.get()[i * matrix.width() + j] <= precision;
+            if ((i == j && !isOne) || (i != j && !isZero)) {
+                    std::cout << i << ", " << j << ": " << matrix.get()[i * matrix.width() + j] << std::endl;
+                    return false;
+            }
+        }
+    }
+    return true;
 }
 
 bool verrifySolution(size_t nbVariables, MatrixType *founded, MatrixType *expected, MatrixType precision) {
@@ -72,8 +88,8 @@ MatrixType* setupVector(size_t size) {
 }
 
 int main(int, char**) {
-    constexpr size_t matrixWidth = 10;
-    constexpr size_t matrixHeight = 10;
+    constexpr size_t matrixWidth = 1000;
+    constexpr size_t matrixHeight = 1000;
     constexpr size_t nbThreads = 4;
 
     MatrixType *matrixMem = new MatrixType[matrixWidth * matrixHeight]();
@@ -100,6 +116,7 @@ int main(int, char**) {
 
     pivotGraph.createDotFile("gausPivot.dot", hh::ColorScheme::EXECUTION, hh::StructureOptions::ALL);
 
+    assert(isIdentity(matrix, 1e-3));
     assert(verrifySolution(matrixHeight, vector.get(), variablesMem, 1e-3));
 
     delete[] matrixMem;
