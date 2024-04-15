@@ -8,20 +8,18 @@
 #include "../data/matrix_line.h"
 #include "../data/ids.h"
 
+#define PivotStateInNb 3
+#define PivotStateInput MatrixLine<Type, Line>, MatrixLine<Type, PivotLine>, MatrixLine<Type, SubstractedLine>
+#define PivotStateOutput MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, MatrixLine<Type, PivotedLine>
+
 // Ensure that the first step of the Gauss pivot algorithm is done. At the end
 // the result lines form a upper triangular matrix that we can use to solve the
 // system.
 template <typename Type>
-class PivotState: public hh::AbstractState<
-                            3,
-                            MatrixLine<Type, Line>, MatrixLine<Type, PivotLine>, MatrixLine<Type, SubstractedLine>,
-                            MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, MatrixLine<Type, ResultLine>> {
+class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, PivotStateOutput> {
   public:
     PivotState(size_t nbLines):
-        hh::AbstractState<
-            3,
-            MatrixLine<Type, Line>, MatrixLine<Type, PivotLine>, MatrixLine<Type, SubstractedLine>,
-            MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, MatrixLine<Type, ResultLine>>(),
+        hh::AbstractState<PivotStateInNb, PivotStateInput, PivotStateOutput>(),
         totalNbLines_(nbLines) {}
 
     // treat lines from split matrix task
@@ -40,6 +38,7 @@ class PivotState: public hh::AbstractState<
         substractedLines_.push_back(line);
 
         if (nbLinesTreated_ == 0) {
+            ++currentPivotIdx_;
             nbLinesTreated_ = totalNbLines_ - currentPivotIdx_ - 1;
             for (auto subline : substractedLines_) {
                 if (subline->row() == currentPivotIdx_) {
@@ -54,16 +53,17 @@ class PivotState: public hh::AbstractState<
     // we get the pivot line with the pivot coef equal to 2. This line is
     // treated so it's sent as a result line.
     void execute(std::shared_ptr<MatrixLine<Type, PivotLine>> line) override {
-        this->addResult(std::make_shared<MatrixLine<Type, ResultLine>>(line));
-        ++currentPivotIdx_;
+        this->addResult(std::make_shared<MatrixLine<Type, PivotedLine>>(line));
+        ++nbPivotedLines_;
     }
 
-    bool isDone() { return currentPivotIdx_ >= totalNbLines_; }
+    bool isDone() { return nbPivotedLines_ == totalNbLines_; }
 
   private:
     size_t currentPivotIdx_ = 0;
     size_t totalNbLines_ = 0;
     size_t nbLinesTreated_ = 0;
+    size_t nbPivotedLines_ = 0;
     std::vector<std::shared_ptr<MatrixLine<Type, SubstractedLine>>> substractedLines_ = {};
 };
 
