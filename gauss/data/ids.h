@@ -5,6 +5,7 @@ enum Ids {
     PivotLine = 0,
     Line,
     SubstractedLine,
+    PivotedLine,
     ResultLine,
 };
 

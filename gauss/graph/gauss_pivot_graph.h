@@ -13,6 +13,8 @@
 #include "../state/pivot_state_manager.h"
 #include "../state/substract_lines_state.h"
 #include "../state/substract_lines_state_manager.h"
+#include "../state/solver_state.h"
+#include "../state/solver_state_manager.h"
 
 template<typename Type>
 class GaussPivotGraph: public hh::Graph<1, std::pair<Matrix<Type>, Vector<Type>>, MatrixLine<Type, ResultLine>> {
@@ -35,7 +37,19 @@ class GaussPivotGraph: public hh::Graph<1, std::pair<Matrix<Type>, Vector<Type>>
             this->edges(pivotStateManager, substractLinesStateManager);
             this->edges(substractLinesStateManager, subLineTask);
             this->edges(subLineTask, pivotStateManager);
-            this->outputs(pivotStateManager);
+            /* this->outputs(pivotStateManager); */
+
+            auto solverState = std::make_shared<SolverState<Type>>(nbLines);
+            auto solverStateManager = std::make_shared<SolverStateManager<Type>>(solverState);
+            auto solv_subLineTask = std::make_shared<SubLineTask<Type>>(nbThreads);
+            auto solv_substractLinesState = std::make_shared<SubstractLinesState<Type>>(nbLines);
+            auto solv_substractLinesStateManager = std::make_shared<SubstractLinesStateManager<Type>>(solv_substractLinesState);
+
+            this->edges(pivotStateManager, solverStateManager);
+            this->edges(solverStateManager, solv_substractLinesStateManager);
+            this->edges(solv_substractLinesStateManager, solv_subLineTask);
+            this->edges(solv_subLineTask, solverStateManager);
+            this->outputs(solverStateManager);
         }
 };
 
