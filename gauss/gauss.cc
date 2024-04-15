@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <utility>
+#include <random>
 
 #include "data/matrix.h"
 #include "data/vector.h"
@@ -8,6 +9,40 @@
 
 using MatrixType = double;
 
+void generateRandomProblem(size_t nbVariables, MatrixType *matrix, MatrixType *vector, MatrixType *variables) {
+    std::random_device dv;
+    std::mt19937 gen(dv());
+    std::uniform_real_distribution<> dis(-100, 100);
+    size_t width = nbVariables, height = nbVariables;
+
+    for (size_t i = 0; i < nbVariables; ++i) {
+        variables[i] = dis(gen);
+    }
+
+    for (size_t i = 0; i < height; ++i) {
+        MatrixType sum = 0;
+        for (size_t j = 0; j < width; ++j) {
+            MatrixType value = dis(gen);
+            matrix[i * width + j] = value;
+            sum += value * variables[j];
+        }
+        vector[i] = sum;
+    }
+}
+
+bool verrifySolution(size_t nbVariables, MatrixType *founded, MatrixType *expected, MatrixType precision) {
+    bool output = true;
+
+    for (size_t i = 0; i < nbVariables; ++i) {
+        if (!((founded[i] - precision) <= expected[i] && expected[i] <= (founded[i] + precision))) {
+            output = false;
+            std::cout << "Error: " << expected[i] << " != " << founded[i] << std::endl;
+        }
+    }
+    return output;
+}
+
+/* test matrix for debugging */
 MatrixType* setupMatrix(size_t width, size_t height) {
     MatrixType *matrixMem = new MatrixType[width * height]();
 
@@ -37,18 +72,21 @@ MatrixType* setupVector(size_t size) {
 }
 
 int main(int, char**) {
-    constexpr size_t matrixWidth = 3;
-    constexpr size_t matrixHeight = 3;
-    constexpr size_t nbThreads = 3;
+    constexpr size_t matrixWidth = 10;
+    constexpr size_t matrixHeight = 10;
+    constexpr size_t nbThreads = 4;
 
-    MatrixType *matrixMem = setupMatrix(matrixWidth, matrixHeight);
-    MatrixType *vectorMem = setupVector(matrixHeight);
+    MatrixType *matrixMem = new MatrixType[matrixWidth * matrixHeight]();
+    MatrixType *vectorMem = new MatrixType[matrixHeight]();
+    MatrixType *variablesMem = new MatrixType[matrixHeight]();
+
+    generateRandomProblem(matrixHeight, matrixMem, vectorMem, variablesMem);
 
     Matrix<MatrixType> matrix(matrixWidth, matrixHeight, matrixMem);
     Vector<MatrixType> vector(matrixHeight, vectorMem);
     auto input = std::make_shared<std::pair<Matrix<MatrixType>, Vector<MatrixType>>>(matrix, vector);
-    std::cout << matrix << std::endl;
-    std::cout << vector << std::endl;
+    /* std::cout << matrix << std::endl; */
+    /* std::cout << vector << std::endl; */
 
     GaussPivotGraph<MatrixType> pivotGraph(matrixHeight, nbThreads);
 
@@ -57,10 +95,12 @@ int main(int, char**) {
     pivotGraph.finishPushingData();
     pivotGraph.waitForTermination();
 
-    std::cout << matrix << std::endl;
-    std::cout << vector << std::endl;
+    /* std::cout << matrix << std::endl; */
+    /* std::cout << vector << std::endl; */
 
     pivotGraph.createDotFile("gausPivot.dot", hh::ColorScheme::EXECUTION, hh::StructureOptions::ALL);
+
+    assert(verrifySolution(matrixHeight, vector.get(), variablesMem, 1e-3));
 
     delete[] matrixMem;
     delete[] vectorMem;
