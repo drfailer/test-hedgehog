@@ -33,6 +33,7 @@ class SubstractLinesState: public hh::AbstractState<2, MatrixLine<Type, PivotLin
                         line
                         )));
         }
+        lines_.clear();
     }
 
     // on récupère une ligne

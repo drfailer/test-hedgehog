@@ -47,6 +47,7 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
                     this->addResult(std::make_shared<MatrixLine<Type, Line>>(subline));
                 }
             }
+            substractedLines_.clear();
         }
     }
 
