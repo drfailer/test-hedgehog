@@ -41,7 +41,7 @@ class SolverState: public hh::AbstractState<SolverStateInNb, SolverStateInput, S
 
         if (nbLinesTreated_ == 0) {
             --currentPivotIdx_;
-            nbLinesTreated_ = totalNbLines_ - currentPivotIdx_ - 1;
+            nbLinesTreated_ = totalNbLines_ - nbResultLines_ - 1;
             for (auto subline : substractedLines_) {
                 if (subline->row() == currentPivotIdx_) {
                     if (currentPivotIdx_ > 0) {
