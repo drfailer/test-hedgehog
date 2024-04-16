@@ -49,7 +49,7 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
                         line
                         )));
         } else {
-            lines_.push_back(line);
+            lines_.emplace_back(line);
         }
     }
 

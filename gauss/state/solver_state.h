@@ -20,7 +20,7 @@ class SolverState: public hh::AbstractState<SolverStateInNb, SolverStateInput, S
     {}
 
     void execute(std::shared_ptr<MatrixLine<Type, PivotedLine>> line) override {
-        pivotedLines_.push_back(line);
+        pivotedLines_.emplace_back(line);
         if (pivotedLines_.size() == totalNbLines_) {
             for (auto pivotedLine : pivotedLines_) {
                 if (pivotedLine->row() == totalNbLines_ - 1) {
@@ -32,12 +32,13 @@ class SolverState: public hh::AbstractState<SolverStateInNb, SolverStateInput, S
                     this->addResult(std::make_shared<MatrixLine<Type, Line>>(pivotedLine));
                 }
             }
+            pivotedLines_.clear();
         }
     }
 
     void execute(std::shared_ptr<MatrixLine<Type, SubstractedLine>> line) override {
         --nbLinesTreated_;
-        substractedLines_.push_back(line);
+        substractedLines_.emplace_back(line);
 
         if (nbLinesTreated_ == 0) {
             --currentPivotIdx_;

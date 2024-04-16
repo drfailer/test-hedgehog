@@ -35,7 +35,7 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
     // we get the line to which with substracted the pivot line
     void execute(std::shared_ptr<MatrixLine<Type, SubstractedLine>> line) override {
         --nbLinesTreated_;
-        substractedLines_.push_back(line);
+        substractedLines_.emplace_back(line);
 
         if (nbLinesTreated_ == 0) {
             ++currentPivotIdx_;
