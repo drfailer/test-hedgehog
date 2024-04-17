@@ -13,14 +13,17 @@
 #include "../state/pivot_state_manager.h"
 #include "../state/substract_lines_state.h"
 #include "../state/substract_lines_state_manager.h"
-#include "../state/solver_state.h"
-#include "../state/solver_state_manager.h"
+
+#define GaussPivotGraphInNb 1
+#define GaussPivotGraphInput std::pair<Matrix<Type>, Vector<Type>>
+#define GaussPivotGraphOutput MatrixLine<Type, PivotedLine>
 
 template<typename Type>
-class GaussPivotGraph: public hh::Graph<1, std::pair<Matrix<Type>, Vector<Type>>, MatrixLine<Type, ResultLine>> {
+class GaussPivotGraph: public hh::Graph<GaussPivotGraphInNb, GaussPivotGraphInput, GaussPivotGraphOutput> {
   public:
     GaussPivotGraph(size_t nbLines, size_t nbThreads):
-        hh::Graph<1, std::pair<Matrix<Type>, Vector<Type>>, MatrixLine<Type, ResultLine>>() {
+        hh::Graph<GaussPivotGraphInNb, GaussPivotGraphInput, GaussPivotGraphOutput>("Pivot graph")
+    {
             auto splitMatrixTask = std::make_shared<SplitMatrixTask<Type>>();
             auto subLineTask = std::make_shared<SubLineTask<Type>>(nbThreads);
             auto divideLineTask = std::make_shared<DivideLineTask<Type>>(nbThreads);
@@ -37,20 +40,8 @@ class GaussPivotGraph: public hh::Graph<1, std::pair<Matrix<Type>, Vector<Type>>
             this->edges(pivotStateManager, substractLinesStateManager);
             this->edges(substractLinesStateManager, subLineTask);
             this->edges(subLineTask, pivotStateManager);
-            /* this->outputs(pivotStateManager); */
-
-            auto solverState = std::make_shared<SolverState<Type>>(nbLines);
-            auto solverStateManager = std::make_shared<SolverStateManager<Type>>(solverState);
-            auto solv_subLineTask = std::make_shared<SubLineTask<Type>>(nbThreads);
-            auto solv_substractLinesState = std::make_shared<SubstractLinesState<Type>>(nbLines);
-            auto solv_substractLinesStateManager = std::make_shared<SubstractLinesStateManager<Type>>(solv_substractLinesState);
-
-            this->edges(pivotStateManager, solverStateManager);
-            this->edges(solverStateManager, solv_substractLinesStateManager);
-            this->edges(solv_substractLinesStateManager, solv_subLineTask);
-            this->edges(solv_subLineTask, solverStateManager);
-            this->outputs(solverStateManager);
-        }
+            this->outputs(pivotStateManager);
+    }
 };
 
 #endif

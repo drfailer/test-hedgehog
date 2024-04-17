@@ -5,14 +5,14 @@
 
 #include "data/matrix.h"
 #include "data/vector.h"
-#include "graph/gauss_pivot_graph.h"
+#include "graph/gauss_graph.h"
 
 using MatrixType = double;
 
 void generateRandomProblem(size_t nbVariables, MatrixType *matrix, MatrixType *vector, MatrixType *variables) {
     std::random_device dv;
     std::mt19937 gen(dv());
-    std::uniform_real_distribution<> dis(-10, 10);
+    std::uniform_real_distribution<> dis(-100, 100);
     size_t width = nbVariables, height = nbVariables;
 
     for (size_t i = 0; i < nbVariables; ++i) {
@@ -109,8 +109,8 @@ MatrixType* setupVector(size_t size) {
 }
 
 int main(int, char**) {
-    constexpr size_t matrixWidth = 100;
-    constexpr size_t matrixHeight = 100;
+    constexpr size_t matrixWidth = 1000;
+    constexpr size_t matrixHeight = 1000;
     constexpr size_t nbThreads = 4;
 
     MatrixType *matrixMem = new MatrixType[matrixWidth * matrixHeight]();
@@ -125,17 +125,17 @@ int main(int, char**) {
     /* std::cout << matrix << std::endl; */
     /* std::cout << vector << std::endl; */
 
-    GaussPivotGraph<MatrixType> pivotGraph(matrixHeight, nbThreads);
+    GaussGraph<MatrixType> gaussGraph(matrixHeight, nbThreads);
 
-    pivotGraph.executeGraph();
-    pivotGraph.pushData(input);
-    pivotGraph.finishPushingData();
-    pivotGraph.waitForTermination();
+    gaussGraph.executeGraph();
+    gaussGraph.pushData(input);
+    gaussGraph.finishPushingData();
+    gaussGraph.waitForTermination();
 
     /* std::cout << matrix << std::endl; */
     /* std::cout << vector << std::endl; */
 
-    pivotGraph.createDotFile("gausPivot.dot", hh::ColorScheme::EXECUTION, hh::StructureOptions::ALL);
+    gaussGraph.createDotFile("gausPivot.dot", hh::ColorScheme::EXECUTION, hh::StructureOptions::ALL);
 
     assert(isIdentity(matrix, 1e-3));
     /* assert(isTriangular(matrix, 1e-3)); */
