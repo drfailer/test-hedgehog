@@ -1,6 +1,6 @@
+#include <format>
 #include <iostream>
-#include <memory>
-#include <utility>
+#include <filesystem>
 
 #include "data/matrix.h"
 #include "data/vector.h"
@@ -9,40 +9,43 @@
 
 using MatrixType = double;
 
-int main(int, char**) {
-    constexpr size_t matrixSize = 1000;
-    constexpr size_t nbThreads = 4;
-    constexpr bool printMatrix = false;
-    constexpr bool printSolution = false;
+int main(int argc, char** argv) {
+    Config config;
 
-    MatrixType *matrixMem = new MatrixType[matrixSize * matrixSize]();
-    MatrixType *vectorMem = new MatrixType[matrixSize]();
-    MatrixType *variablesMem = new MatrixType[matrixSize]();
+    parseCmdArgs(argc, argv, config);
 
-    generateRandomProblem(matrixSize, matrixMem, vectorMem, variablesMem);
+    MatrixType *matrixMem = new MatrixType[config.matrixSize * config.matrixSize]();
+    MatrixType *vectorMem = new MatrixType[config.matrixSize]();
+    MatrixType *variablesMem = new MatrixType[config.matrixSize]();
 
-    Matrix<MatrixType> matrix(matrixSize, matrixSize, matrixMem);
-    Vector<MatrixType> vector(matrixSize, vectorMem);
+    generateRandomProblem(config.matrixSize, matrixMem, vectorMem, variablesMem);
+
+    if (!std::filesystem::exists(config.dotDirectory)) {
+        std::filesystem::create_directory(config.dotDirectory);
+    }
+
+    Matrix<MatrixType> matrix(config.matrixSize, config.matrixSize, matrixMem);
+    Vector<MatrixType> vector(config.matrixSize, vectorMem);
     auto input = std::make_shared<std::pair<Matrix<MatrixType>, Vector<MatrixType>>>(matrix, vector);
 
-    if (printMatrix) {
+    if (config.printMatrix) {
         std::cout << matrix << std::endl;
         std::cout << vector << std::endl;
     }
 
-    GaussGraph<MatrixType> gaussGraph(matrixSize, nbThreads);
+    GaussGraph<MatrixType> gaussGraph(config.matrixSize, config.nbThreads);
 
     gaussGraph.executeGraph();
     gaussGraph.pushData(input);
     gaussGraph.finishPushingData();
     gaussGraph.waitForTermination();
-    gaussGraph.createDotFile("gausPivot.dot", hh::ColorScheme::EXECUTION, hh::StructureOptions::QUEUE);
+    gaussGraph.createDotFile(std::format("{}/gaussGraph{}-{}.dot", config.dotDirectory, config.nbThreads, config.matrixSize), hh::ColorScheme::EXECUTION, hh::StructureOptions::QUEUE);
 
     assert(isIdentity(matrix, 1e-3));
     assert(isTriangular(matrix, 1e-3));
-    assert(verrifySolution(matrixSize, vector.get(), variablesMem, 1e-3));
+    assert(verrifySolution(config.matrixSize, vector.get(), variablesMem, 1e-3));
 
-    if (printSolution) {
+    if (config.printResult) {
         std::cout << vector << std::endl;
     }
 

@@ -6,6 +6,24 @@
 #include <iostream>
 #include "data/matrix.h"
 
+/******************************************************************************/
+/*                                 structures                                 */
+/******************************************************************************/
+
+struct Config {
+    size_t matrixSize;
+    size_t nbThreads;
+    bool printMatrix;
+    bool printResult;
+    std::string dotDirectory;
+};
+
+/******************************************************************************/
+/*                                 functions                                  */
+/******************************************************************************/
+
+void parseCmdArgs(int argc, char **argv, Config &config);
+
 template <typename Type>
 void generateRandomProblem(size_t nbVariables, Type *matrix, Type *vector, Type *variables) {
     std::random_device dv;
