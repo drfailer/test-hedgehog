@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(hedgehog_Tutorials)
+project(test-hedgehog)
 
 set(CMAKE_CXX_STANDARD 20)
 
