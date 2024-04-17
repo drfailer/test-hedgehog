@@ -2,7 +2,8 @@
 #define IDS_HPP
 
 enum Ids {
-    PivotLine = 0,
+    BasePivotLine = 0,
+    PivotLine,
     Line,
     SubstractedLine,
     PivotedLine,

@@ -9,8 +9,8 @@
 #include "../data/ids.h"
 
 #define PivotStateInNb 3
-#define PivotStateInput MatrixLine<Type, Line>, MatrixLine<Type, PivotLine>, MatrixLine<Type, SubstractedLine>
-#define PivotStateOutput MatrixLine<Type, PivotLine>, MatrixLine<Type, Line>, MatrixLine<Type, PivotedLine>
+#define PivotStateInput MatrixLine<Type, Line>, MatrixLine<Type, PivotedLine>, MatrixLine<Type, SubstractedLine>
+#define PivotStateOutput MatrixLine<Type, BasePivotLine>, MatrixLine<Type, Line>, MatrixLine<Type, PivotedLine>
 
 // Ensure that the first step of the Gauss pivot algorithm is done. At the end
 // the result lines form a upper triangular matrix that we can use to solve the
@@ -20,13 +20,12 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
   public:
     PivotState(size_t nbLines):
         hh::AbstractState<PivotStateInNb, PivotStateInput, PivotStateOutput>(),
-        totalNbLines_(nbLines) {}
+        totalNbLines_(nbLines), nbLinesTreated_(nbLines - 1) {}
 
     // treat lines from split matrix task
     void execute(std::shared_ptr<MatrixLine<Type, Line>> line) override {
         if (line->row() == 0) {
-            nbLinesTreated_ = totalNbLines_ - 1;
-            this->addResult(std::make_shared<MatrixLine<Type, PivotLine>>(line));
+            this->addResult(std::make_shared<MatrixLine<Type, BasePivotLine>>(line));
         } else {
             this->addResult(line);
         }
@@ -42,7 +41,7 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
             nbLinesTreated_ = totalNbLines_ - currentPivotIdx_ - 1;
             for (auto subline : substractedLines_) {
                 if (subline->row() == currentPivotIdx_) {
-                    this->addResult(std::make_shared<MatrixLine<Type, PivotLine>>(subline));
+                    this->addResult(std::make_shared<MatrixLine<Type, BasePivotLine>>(subline));
                 } else {
                     this->addResult(std::make_shared<MatrixLine<Type, Line>>(subline));
                 }
@@ -53,8 +52,8 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
 
     // we get the pivot line with the pivot coef equal to 2. This line is
     // treated so it's sent as a result line.
-    void execute(std::shared_ptr<MatrixLine<Type, PivotLine>> line) override {
-        this->addResult(std::make_shared<MatrixLine<Type, PivotedLine>>(line));
+    void execute(std::shared_ptr<MatrixLine<Type, PivotedLine>> line) override {
+        this->addResult(line);
         ++nbPivotedLines_;
     }
 

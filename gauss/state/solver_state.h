@@ -24,7 +24,6 @@ class SolverState: public hh::AbstractState<SolverStateInNb, SolverStateInput, S
         if (pivotedLines_.size() == totalNbLines_) {
             for (auto pivotedLine : pivotedLines_) {
                 if (pivotedLine->row() == totalNbLines_ - 1) {
-                    nbLinesTreated_ = totalNbLines_ - 1;
                     this->addResult(std::make_shared<MatrixLine<Type, PivotLine>>(pivotedLine));
                     this->addResult(std::make_shared<MatrixLine<Type, ResultLine>>(pivotedLine));
                     ++nbResultLines_;
@@ -33,6 +32,7 @@ class SolverState: public hh::AbstractState<SolverStateInNb, SolverStateInput, S
                 }
             }
             pivotedLines_.clear();
+            nbLinesTreated_ = totalNbLines_ - 1;
         }
     }
 

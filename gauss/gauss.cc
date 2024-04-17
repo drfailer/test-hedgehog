@@ -12,7 +12,7 @@ using MatrixType = double;
 void generateRandomProblem(size_t nbVariables, MatrixType *matrix, MatrixType *vector, MatrixType *variables) {
     std::random_device dv;
     std::mt19937 gen(dv());
-    std::uniform_int_distribution<> dis(-10, 10);
+    std::uniform_real_distribution<> dis(-10, 10);
     size_t width = nbVariables, height = nbVariables;
 
     for (size_t i = 0; i < nbVariables; ++i) {
@@ -23,6 +23,11 @@ void generateRandomProblem(size_t nbVariables, MatrixType *matrix, MatrixType *v
         MatrixType sum = 0;
         for (size_t j = 0; j < width; ++j) {
             MatrixType value = dis(gen);
+            if (i == j && value == 0) value++; // make sure we don't have 0 on
+                                               // the diagonal (normally, we should
+                                               // exchange lines in this case
+                                               // but it's not done yet in the
+                                               // graph)
             matrix[i * width + j] = value;
             sum += value * variables[j];
         }
@@ -106,7 +111,7 @@ MatrixType* setupVector(size_t size) {
 int main(int, char**) {
     constexpr size_t matrixWidth = 100;
     constexpr size_t matrixHeight = 100;
-    constexpr size_t nbThreads = 3;
+    constexpr size_t nbThreads = 4;
 
     MatrixType *matrixMem = new MatrixType[matrixWidth * matrixHeight]();
     MatrixType *vectorMem = new MatrixType[matrixHeight]();
@@ -132,9 +137,9 @@ int main(int, char**) {
 
     pivotGraph.createDotFile("gausPivot.dot", hh::ColorScheme::EXECUTION, hh::StructureOptions::ALL);
 
-    /* assert(isIdentity(matrix, 1e-3)); */
-    assert(isTriangular(matrix, 1e-3));
-    /* assert(verrifySolution(matrixHeight, vector.get(), variablesMem, 1e-3)); */
+    assert(isIdentity(matrix, 1e-3));
+    /* assert(isTriangular(matrix, 1e-3)); */
+    assert(verrifySolution(matrixHeight, vector.get(), variablesMem, 1e-3));
 
     delete[] matrixMem;
     delete[] vectorMem;
