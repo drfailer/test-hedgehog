@@ -31,14 +31,10 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
     void execute(std::shared_ptr<MatrixLine<Type, PivotLine>> pivotLine) override {
         this->pivotLine_ = pivotLine;
         ++currentLine_;
-        nbLinesTreatedCurrentPivot_ = totalNbLines_ - currentLine_;
+        nbLinesTreatedCurrentPivot_ = totalNbLines_ - currentLine_ - lines_.size();
+        nbLinesTreated_ -= lines_.size();
         for (auto line : lines_) {
-            this->addResult(std::make_shared<SubstractLinesOutType<Type>>(std::make_pair(
-                        pivotLine_,
-                        line
-                        )));
-            --nbLinesTreated_;
-            --nbLinesTreatedCurrentPivot_;
+            this->addResult(std::make_shared<SubstractLinesOutType<Type>>(pivotLine_, line));
         }
         lines_.clear();
 
@@ -50,18 +46,14 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
     // on récupère une ligne
     void execute(std::shared_ptr<MatrixLine<Type, Line>> line) override {
         if (pivotLine_) {
-            this->addResult(std::make_shared<SubstractLinesOutType<Type>>(std::make_pair(
-                        pivotLine_,
-                        line
-                        )));
+            this->addResult(std::make_shared<SubstractLinesOutType<Type>>(pivotLine_, line));
             --nbLinesTreated_;
             --nbLinesTreatedCurrentPivot_;
+            if (nbLinesTreatedCurrentPivot_ == 0) {
+                pivotLine_ = nullptr;
+            }
         } else {
             lines_.emplace_back(line);
-        }
-
-        if (nbLinesTreatedCurrentPivot_ == 0) {
-            pivotLine_ = nullptr;
         }
     }
 
