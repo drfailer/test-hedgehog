@@ -25,7 +25,8 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
         hh::AbstractState<SubstractLinesStateInNb, SubstractLinesStateInput, SubstractLinesStateOutput>(),
         totalNbLines_(nbLines),
         nbLinesToTreatForCurrentPivot_(nbLines - 1),
-        nbLinesToTreat_((nbLines * (nbLines - 1)) / 2) { }
+        nbLinesToTreat_((nbLines * (nbLines - 1)) / 2)
+        { }
 
     // on récupère la ligne du pivot
     void execute(std::shared_ptr<MatrixLine<Type, PivotLine>> pivotLine) override {
@@ -34,6 +35,7 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
         nbLinesToTreatForCurrentPivot_ = totalNbLines_ - currentPivot_ - lines_.size();
         for (auto line : lines_) {
             this->addResult(std::make_shared<SubstractLinesOutType<Type>>(pivotLine_, line));
+            --nbLinesToTreat_;
         }
         lines_.clear();
         nbLinesToTreat_ -= lines_.size();

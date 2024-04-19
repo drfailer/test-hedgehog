@@ -20,7 +20,7 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
   public:
     PivotState(size_t nbLines):
         hh::AbstractState<PivotStateInNb, PivotStateInput, PivotStateOutput>(),
-        totalNbLines_(nbLines), nbLinesTreated_(nbLines - 1) {}
+        totalNbLines_(nbLines), nbLinesToTreat_(nbLines - 1) {}
 
     // treat lines from split matrix task
     void execute(std::shared_ptr<MatrixLine<Type, Line>> line) override {
@@ -33,12 +33,12 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
 
     // we get the line to which with substracted the pivot line
     void execute(std::shared_ptr<MatrixLine<Type, SubstractedLine>> line) override {
-        --nbLinesTreated_;
+        --nbLinesToTreat_;
         substractedLines_.emplace_back(line);
 
-        if (nbLinesTreated_ == 0) {
+        if (nbLinesToTreat_ == 0) {
             ++currentPivotIdx_;
-            nbLinesTreated_ = totalNbLines_ - currentPivotIdx_ - 1;
+            nbLinesToTreat_ = totalNbLines_ - currentPivotIdx_ - 1;
             for (auto subline : substractedLines_) {
                 if (subline->row() == currentPivotIdx_) {
                     this->addResult(std::make_shared<MatrixLine<Type, BasePivotLine>>(subline));
@@ -62,7 +62,7 @@ class PivotState: public hh::AbstractState<PivotStateInNb, PivotStateInput, Pivo
   private:
     size_t currentPivotIdx_ = 0;
     size_t totalNbLines_ = 0;
-    size_t nbLinesTreated_ = 0;
+    size_t nbLinesToTreat_ = 0;
     size_t nbPivotedLines_ = 0;
     std::vector<std::shared_ptr<MatrixLine<Type, SubstractedLine>>> substractedLines_ = {};
 };
