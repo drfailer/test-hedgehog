@@ -24,21 +24,22 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
     SubstractLinesState(size_t nbLines):
         hh::AbstractState<SubstractLinesStateInNb, SubstractLinesStateInput, SubstractLinesStateOutput>(),
         totalNbLines_(nbLines),
-        nbLinesTreatedCurrentPivot_(nbLines - 1),
-        nbLinesTreated_((nbLines * (nbLines - 1)) / 2) { }
+        nbLinesToTreatForCurrentPivot_(nbLines - 1),
+        nbLinesToTreat_((nbLines * (nbLines - 1)) / 2)
+        { }
 
     // on récupère la ligne du pivot
     void execute(std::shared_ptr<MatrixLine<Type, PivotLine>> pivotLine) override {
         this->pivotLine_ = pivotLine;
-        ++currentLine_;
-        nbLinesTreatedCurrentPivot_ = totalNbLines_ - currentLine_ - lines_.size();
-        nbLinesTreated_ -= lines_.size();
+        ++currentPivot_;
+        nbLinesToTreatForCurrentPivot_ = totalNbLines_ - currentPivot_ - lines_.size();
         for (auto line : lines_) {
             this->addResult(std::make_shared<SubstractLinesOutType<Type>>(pivotLine_, line));
+            --nbLinesToTreat_;
         }
         lines_.clear();
 
-        if (nbLinesTreatedCurrentPivot_ == 0) {
+        if (nbLinesToTreatForCurrentPivot_ == 0) {
             pivotLine_ = nullptr;
         }
     }
@@ -47,9 +48,9 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
     void execute(std::shared_ptr<MatrixLine<Type, Line>> line) override {
         if (pivotLine_) {
             this->addResult(std::make_shared<SubstractLinesOutType<Type>>(pivotLine_, line));
-            --nbLinesTreated_;
-            --nbLinesTreatedCurrentPivot_;
-            if (nbLinesTreatedCurrentPivot_ == 0) {
+            --nbLinesToTreat_;
+            --nbLinesToTreatForCurrentPivot_;
+            if (nbLinesToTreatForCurrentPivot_ == 0) {
                 pivotLine_ = nullptr;
             }
         } else {
@@ -57,13 +58,13 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
         }
     }
 
-    bool isDone() { return nbLinesTreated_ <= 0; }
+    bool isDone() { return nbLinesToTreat_ <= 0; }
 
   private:
     size_t totalNbLines_ = 0;
-    size_t nbLinesTreated_ = 0;
-    size_t nbLinesTreatedCurrentPivot_ = 0;
-    size_t currentLine_ = 0;
+    size_t nbLinesToTreat_ = 0;
+    size_t nbLinesToTreatForCurrentPivot_ = 0;
+    size_t currentPivot_ = 0;
     std::vector<std::shared_ptr<MatrixLine<Type, Line>>> lines_ = {};
     std::shared_ptr<MatrixLine<Type, PivotLine>> pivotLine_ = nullptr;
 };
