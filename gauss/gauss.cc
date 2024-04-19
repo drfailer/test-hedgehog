@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
     gaussGraph.waitForTermination();
     gaussGraph.createDotFile(std::format("{}/gaussGraph{}-{}.dot", config.dotDirectory, config.nbThreads, config.matrixSize), hh::ColorScheme::EXECUTION, hh::StructureOptions::QUEUE);
 
-    assert(isIdentity(matrix, 1e-3));
     assert(isTriangular(matrix, 1e-3));
+    assert(isIdentity(matrix, 1e-3));
     assert(verrifySolution(config.matrixSize, vector.get(), variablesMem, 1e-3));
 
     if (config.printResult) {
