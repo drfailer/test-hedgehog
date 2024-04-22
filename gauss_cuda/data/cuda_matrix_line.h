@@ -1,0 +1,71 @@
+#ifndef CUDA_MATRIX_LINE_HPP
+#define CUDA_MATRIX_LINE_HPP
+
+#include "ids.h"
+#include "matrix_line.h"
+#include <hedgehog/hedgehog.h>
+
+template <typename Type, Ids Id>
+class CudaMatrixLine: public MatrixLine<Type, Id>,
+                      public hh::ManagedMemory {
+  public:
+    CudaMatrixLine(size_t lineSize): MatrixLine<Type, Id>(lineSize) {
+        checkCudaErrors(cudaMalloc((void **) this->ptr(), sizeof(Type) * lineSize));
+        checkCudaErrors(cudaMalloc((void **) this->vectorValuePtr(), sizeof(Type) * 1));
+    }
+
+    template <Ids OtherId>
+    CudaMatrixLine(CudaMatrixLine<Type, OtherId> const& other):
+        MatrixLine<Type, Id>(static_cast<MatrixLine<Type, OtherId>>(other)) { }
+
+    template <Ids OtherId>
+    CudaMatrixLine(std::shared_ptr<CudaMatrixLine<Type, OtherId>> other):
+        MatrixLine<Type, Id>(std::static_pointer_cast<MatrixLine<Type, OtherId>>(other)) { }
+
+    ~CudaMatrixLine() {
+        checkCudaErrors(cudaFree(this->get()));
+    }
+
+    void recordEvent(cudaStream_t stream) {
+        cudaEventRecord(event_, stream);
+    }
+
+    void synchronizeEvent() {
+        cudaEventSynchronize(event_);
+    }
+
+    void ttl(size_t ttl) { ttl_ = ttl; }
+    void postProcess() override { --this->ttl_; }
+    bool canBeRecycled() override { return this->ttl_ == 0; }
+
+    std::shared_ptr<MatrixLine<Type, Id>> copyToCPUMemory(cudaStream_t stream) {
+        auto res = std::make_shared<MatrixLine<Type, Id>>(this->size(),
+                this->row(), this->vectorValue(), this->get());
+        checkCudaErrors(cudaMemcpyAsync(res->get(), this->get(),
+                    res->size() * sizeof(Type), cudaMemcpyDeviceToHost, stream));
+        checkCudaErrors(cudaMemcpyAsync(res->vectorValue(), this->vectorValue(),
+                    res->size() * 1, cudaMemcpyDeviceToHost, stream));
+        checkCudaErrors(cudaStreamSynchronize(stream));
+        return res;
+    }
+
+    template <Ids OtherId>
+    void fromMatrixLine(std::shared_ptr<MatrixLine<Type, OtherId>> line) {
+        this->size(line->size());
+        this->row(line->row());
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, CudaMatrixLine const &data) {
+        os << "CudaMatrixLine " << Id << std::endl;
+        os << "| row: " << data.row() << std::endl;
+        os << "| size: " << data.size() << std::endl;
+        os << "| ttl: " << data.ttl_ << std::endl;
+        return os;
+    }
+
+  private:
+    size_t ttl_ = 0;
+    cudaEvent_t event_ = {};
+};
+
+#endif

@@ -10,3 +10,4 @@ game_of_life/.gdb_history
 game_of_life/.cache/clangd/index
 game_of_life/compile_commands.json
 gauss/.gdb_history
+gauss_cuda/.gdb_history
