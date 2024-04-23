@@ -35,7 +35,7 @@ class MatrixLine { // => EquationLine
     void set(Type *ptr) { this->ptr_ = ptr; }
     void vectorValue(Type newValue) { *this->vectorValue_ = newValue; }
 
-  private:
+  protected:
     size_t size_ = 0;
     size_t row_ = 0;
     Type *vectorValue_ = nullptr;

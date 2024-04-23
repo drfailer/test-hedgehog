@@ -10,8 +10,8 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
                       public hh::ManagedMemory {
   public:
     CudaMatrixLine(size_t lineSize): MatrixLine<Type, Id>(lineSize) {
-        checkCudaErrors(cudaMalloc((void **) this->ptr(), sizeof(Type) * lineSize));
-        checkCudaErrors(cudaMalloc((void **) this->vectorValuePtr(), sizeof(Type) * 1));
+        checkCudaErrors(cudaMalloc((void **) &this->ptr_, sizeof(Type) * lineSize));
+        checkCudaErrors(cudaMalloc((void **) &this->vectorValue_, sizeof(Type) * 1));
     }
 
     template <Ids OtherId>
@@ -24,6 +24,7 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
 
     ~CudaMatrixLine() {
         checkCudaErrors(cudaFree(this->get()));
+        checkCudaErrors(cudaFree(*this->vectorValuePtr()));
     }
 
     void recordEvent(cudaStream_t stream) {
