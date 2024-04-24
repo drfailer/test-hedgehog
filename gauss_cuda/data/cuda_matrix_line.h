@@ -53,10 +53,16 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
     void fromCudaMatrixLine(std::shared_ptr<CudaMatrixLine<Type, OtherId>> line) {
         this->size(line->size());
         this->row(line->row());
-        this->vectorValue(line->vectorValue());
-        this->set(line->get());
+        // save host ptrs
         this->hostVectorValuePtr_ = line->hostVectorValuePtr();
         this->hostLinePtr_ = line->hostLinePtr();
+        // swap device memory
+        Type *vec = line->vectorValue();
+        Type *ptr = line->get();
+        line->vectorValue(this->vectorValue());
+        line->set(this->get());
+        this->vectorValue(vec);
+        this->set(ptr);
     }
 
     friend std::ostream &operator<<(std::ostream &os, CudaMatrixLine const &data) {

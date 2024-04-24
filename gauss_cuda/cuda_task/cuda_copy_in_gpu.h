@@ -31,12 +31,13 @@ class CudaCopyInGPU:
     void execute(std::shared_ptr<SubLineInType<Type>> lines) override {
         auto pivotLine = std::dynamic_pointer_cast<CudaMatrixLine<Type, Line>>(this->getManagedMemory());
         auto line = std::dynamic_pointer_cast<CudaMatrixLine<Type, Line>>(this->getManagedMemory());
-        Type coef = lines->first->get()[0];
 
         pivotLine->fromMatrixLine(lines->first);
         line->fromMatrixLine(lines->second);
         pivotLine->ttl(1);
         line->ttl(1);
+
+        Type coef = lines->second->get()[lines->first->row()];
 
         checkCudaErrors(cudaMemcpyAsync(pivotLine->get(), lines->first->get(),
                     sizeof(Type) * pivotLine->size(), cudaMemcpyHostToDevice, this->stream()));
