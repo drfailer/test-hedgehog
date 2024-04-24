@@ -1,4 +1,5 @@
 #include "cuda_gauss.h"
+#include <cstdio>
 
 __global__ void substractLines_impl(double *res, double *pivot, double *resVector,
         double *pivotVector, double coef, size_t size) {
@@ -13,7 +14,7 @@ __global__ void substractLines_impl(double *res, double *pivot, double *resVecto
 }
 
 void substractLines(double *res, double *pivot, double *resVector,
-        double *pivotVector, size_t coef, size_t size, cudaStream_t stream)
+        double *pivotVector, double coef, size_t size, cudaStream_t stream)
 {
     int threadsPerBlock = 256;
     int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
