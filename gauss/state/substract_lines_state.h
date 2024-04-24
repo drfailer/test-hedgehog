@@ -38,7 +38,6 @@ class SubstractLinesState: public hh::AbstractState<SubstractLinesStateInNb, Sub
             --nbLinesToTreat_;
         }
         lines_.clear();
-        nbLinesToTreat_ -= lines_.size();
 
         if (nbLinesToTreatForCurrentPivot_ == 0) {
             pivotLine_ = nullptr;
