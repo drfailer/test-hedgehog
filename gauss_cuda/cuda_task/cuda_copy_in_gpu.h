@@ -31,17 +31,13 @@ class CudaCopyInGPU:
     void execute(std::shared_ptr<SubLineInType<Type>> lines) override {
         auto pivotLine = std::dynamic_pointer_cast<CudaMatrixLine<Type, Line>>(this->getManagedMemory());
         auto line = std::dynamic_pointer_cast<CudaMatrixLine<Type, Line>>(this->getManagedMemory());
+        Type coef = lines->first->get()[0];
+
         pivotLine->fromMatrixLine(lines->first);
         line->fromMatrixLine(lines->second);
         pivotLine->ttl(1);
         line->ttl(1);
-        assert(pivotLine != nullptr);
-        assert(line != nullptr);
-        std::cout << *pivotLine << std::endl;
-        std::cout << *line << std::endl;
-        std::cout << lines->first->get() << std::endl;
-        std::cout << pivotLine->get() << std::endl;
-        std::cout << this->stream() << std::endl;
+
         checkCudaErrors(cudaMemcpyAsync(pivotLine->get(), lines->first->get(),
                     sizeof(Type) * pivotLine->size(), cudaMemcpyHostToDevice, this->stream()));
         checkCudaErrors(cudaMemcpyAsync(pivotLine->vectorValue(), lines->first->vectorValue(),
@@ -51,7 +47,7 @@ class CudaCopyInGPU:
         checkCudaErrors(cudaMemcpyAsync(line->vectorValue(), lines->second->vectorValue(),
                     sizeof(Type) * 1, cudaMemcpyHostToDevice, this->stream()));
         checkCudaErrors(cudaStreamSynchronize(this->stream()));
-        this->addResult(std::make_shared<CudaSubLineInType<Type>>(pivotLine, line));
+        this->addResult(std::make_shared<CudaSubLineInType<Type>>(pivotLine, line, coef));
     }
 
     std::shared_ptr<hh::AbstractTask<CudaCopyInGPUNbIn, CudaCopyInGPUInput, CudaCopyInGPUOutput>>

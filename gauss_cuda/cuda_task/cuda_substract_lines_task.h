@@ -2,10 +2,14 @@
 #define CUDA_SUBSTRACT_LINES_TASK_HPP
 
 #include <hedgehog/hedgehog.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 #include "../data/cuda_matrix_line.h"
+#include "../data/substract_pair.h"
+#include "../cuda/cuda_gauss.h"
 
 template <typename Type>
-using CudaSubLineInType = std::pair<std::shared_ptr<CudaMatrixLine<Type, Line>>, std::shared_ptr<CudaMatrixLine<Type, Line>>>;
+using CudaSubLineInType = SubstractPair<Type>;
 
 #define CudaSubLineTaskInNb 1
 #define CudaSubLineTaskInput CudaSubLineInType<Type>
@@ -20,22 +24,19 @@ class CudaSubstractLinesTask: public hh::AbstractCUDATask<CudaSubLineTaskInNb, C
             CudaSubLineTaskInput,
             CudaSubLineTaskOutput>("Cuda sub lines task", nbThreads, false, false) {}
 
-    void execute(std::shared_ptr<CudaSubLineInType<Type>> lines) {
-        std::shared_ptr<CudaMatrixLine<Type, Line>> pivotLine = lines->first;
-        std::shared_ptr<CudaMatrixLine<Type, Line>> line = lines->second;
+    void execute(std::shared_ptr<SubstractPair<Type>> pair) override {
+        std::shared_ptr<CudaMatrixLine<Type, Line>> pivotLine = pair->pivot();
+        std::shared_ptr<CudaMatrixLine<Type, Line>> line = pair->line();
         auto result = std::dynamic_pointer_cast<CudaMatrixLine<Type, SubstractedLine>>(this->getManagedMemory());
-        Type coef = line->get()[pivotLine->row()];
-
+        result->fromCudaMatrixLine(line);
+        Type coef = pair->coef();
+        int threadsPerBlock = 256;
+        int blocksPerGrid = (pivotLine->size() + threadsPerBlock - 1) / threadsPerBlock;
         result->ttl(1);
 
-        if (coef) {
-            for (size_t i = 0; i < pivotLine->size(); ++i) {
-                result->get()[i] -= pivotLine->get()[i] * coef;
-            }
-            *result->vectorValue() -= *pivotLine->vectorValue() * coef;
-        }
+        substractLines(result->get(), pivotLine->get(), result->vectorValue(),
+                pivotLine->vectorValue(), coef, pivotLine->size(), this->stream());
         checkCudaErrors(cudaStreamSynchronize(this->stream()));
-
         pivotLine->returnToMemoryManager();
         line->returnToMemoryManager();
         this->addResult(result);

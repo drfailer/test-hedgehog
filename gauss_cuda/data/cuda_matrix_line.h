@@ -4,6 +4,7 @@
 #include "ids.h"
 #include "matrix_line.h"
 #include <hedgehog/hedgehog.h>
+#include <cuda_runtime_api.h>
 
 template <typename Type, Ids Id>
 class CudaMatrixLine: public MatrixLine<Type, Id>,
@@ -23,8 +24,8 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
         MatrixLine<Type, Id>(std::static_pointer_cast<MatrixLine<Type, OtherId>>(other)) { }
 
     ~CudaMatrixLine() {
-        checkCudaErrors(cudaFree(this->get()));
-        checkCudaErrors(cudaFree(*this->vectorValuePtr()));
+        checkCudaErrors(cudaFree(this->ptr_));
+        checkCudaErrors(cudaFree(this->vectorValue_));
     }
 
     void recordEvent(cudaStream_t stream) {
@@ -41,11 +42,13 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
 
     std::shared_ptr<MatrixLine<Type, Id>> copyToCPUMemory(cudaStream_t stream) {
         auto res = std::make_shared<MatrixLine<Type, Id>>(this->size(),
-                this->row(), this->vectorValue(), this->get());
+                this->row(), this->hostVectorValuePtr_, this->hostLinePtr_);
+        /* std::cout << "gpu: " << this->vectorValue() << std::endl; */
+        /* std::cout << "cpu: " << res->vectorValue() << std::endl; */
         checkCudaErrors(cudaMemcpyAsync(res->get(), this->get(),
                     res->size() * sizeof(Type), cudaMemcpyDeviceToHost, stream));
-        checkCudaErrors(cudaMemcpyAsync(res->vectorValue(), this->vectorValue(),
-                    res->size() * 1, cudaMemcpyDeviceToHost, stream));
+        /* checkCudaErrors(cudaMemcpyAsync(res->vectorValue(), this->vectorValue(), */
+        /*             res->size() * 1, cudaMemcpyDeviceToHost, stream)); */
         checkCudaErrors(cudaStreamSynchronize(stream));
         return res;
     }
@@ -54,6 +57,18 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
     void fromMatrixLine(std::shared_ptr<MatrixLine<Type, OtherId>> line) {
         this->size(line->size());
         this->row(line->row());
+        this->hostVectorValuePtr_ = line->vectorValue();
+        this->hostLinePtr_ = line->get();
+    }
+
+    template <Ids OtherId>
+    void fromCudaMatrixLine(std::shared_ptr<CudaMatrixLine<Type, OtherId>> line) {
+        this->size(line->size());
+        this->row(line->row());
+        this->vectorValue(line->vectorValue());
+        this->set(line->get());
+        this->hostVectorValuePtr_ = line->hostVectorValuePtr();
+        this->hostLinePtr_ = line->hostLinePtr();
     }
 
     friend std::ostream &operator<<(std::ostream &os, CudaMatrixLine const &data) {
@@ -64,9 +79,14 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
         return os;
     }
 
+    Type *hostVectorValuePtr() const { return hostVectorValuePtr_; };
+    Type *hostLinePtr() const { return hostLinePtr_; };
+
   private:
     size_t ttl_ = 0;
     cudaEvent_t event_ = {};
+    Type *hostVectorValuePtr_ = nullptr;
+    Type *hostLinePtr_ = nullptr;
 };
 
 #endif
