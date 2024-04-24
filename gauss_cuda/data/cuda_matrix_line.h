@@ -15,26 +15,16 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
         checkCudaErrors(cudaMalloc((void **) &this->vectorValue_, sizeof(Type) * 1));
     }
 
-    template <Ids OtherId>
-    CudaMatrixLine(CudaMatrixLine<Type, OtherId> const& other):
-        MatrixLine<Type, Id>(static_cast<MatrixLine<Type, OtherId>>(other)) { }
-
-    template <Ids OtherId>
-    CudaMatrixLine(std::shared_ptr<CudaMatrixLine<Type, OtherId>> other):
-        MatrixLine<Type, Id>(std::static_pointer_cast<MatrixLine<Type, OtherId>>(other)) { }
-
     ~CudaMatrixLine() {
         checkCudaErrors(cudaFree(this->ptr_));
         checkCudaErrors(cudaFree(this->vectorValue_));
     }
 
-    void recordEvent(cudaStream_t stream) {
-        cudaEventRecord(event_, stream);
-    }
+    Type *hostVectorValuePtr() const { return hostVectorValuePtr_; };
+    Type *hostLinePtr() const { return hostLinePtr_; };
 
-    void synchronizeEvent() {
-        cudaEventSynchronize(event_);
-    }
+    void recordEvent(cudaStream_t stream) { cudaEventRecord(event_, stream); }
+    void synchronizeEvent() { cudaEventSynchronize(event_); }
 
     void ttl(size_t ttl) { ttl_ = ttl; }
     void postProcess() override { --this->ttl_; }
@@ -76,9 +66,6 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
         os << "| ttl: " << data.ttl_ << std::endl;
         return os;
     }
-
-    Type *hostVectorValuePtr() const { return hostVectorValuePtr_; };
-    Type *hostLinePtr() const { return hostLinePtr_; };
 
   private:
     size_t ttl_ = 0;
