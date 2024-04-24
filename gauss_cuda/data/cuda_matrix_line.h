@@ -43,12 +43,10 @@ class CudaMatrixLine: public MatrixLine<Type, Id>,
     std::shared_ptr<MatrixLine<Type, Id>> copyToCPUMemory(cudaStream_t stream) {
         auto res = std::make_shared<MatrixLine<Type, Id>>(this->size(),
                 this->row(), this->hostVectorValuePtr_, this->hostLinePtr_);
-        /* std::cout << "gpu: " << this->vectorValue() << std::endl; */
-        /* std::cout << "cpu: " << res->vectorValue() << std::endl; */
         checkCudaErrors(cudaMemcpyAsync(res->get(), this->get(),
                     res->size() * sizeof(Type), cudaMemcpyDeviceToHost, stream));
-        /* checkCudaErrors(cudaMemcpyAsync(res->vectorValue(), this->vectorValue(), */
-        /*             res->size() * 1, cudaMemcpyDeviceToHost, stream)); */
+        checkCudaErrors(cudaMemcpyAsync(res->vectorValue(), this->vectorValue(),
+                    sizeof(Type) * 1, cudaMemcpyDeviceToHost, stream));
         checkCudaErrors(cudaStreamSynchronize(stream));
         return res;
     }
