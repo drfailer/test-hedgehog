@@ -13,8 +13,8 @@
 template <typename Type, Ids Id>
 class CudaCopyOutGPU: public hh::AbstractCUDATask<CudaCopyOutGPUNbIn, CudaCopyOutGPUInput, CudaCopyOutGPUOutput> {
   public:
-    CudaCopyOutGPU():
-        hh::AbstractCUDATask<CudaCopyOutGPUNbIn, CudaCopyOutGPUInput, CudaCopyOutGPUOutput>("Copy Out GPU", 1, false, false)
+    CudaCopyOutGPU(size_t numberThreads):
+        hh::AbstractCUDATask<CudaCopyOutGPUNbIn, CudaCopyOutGPUInput, CudaCopyOutGPUOutput>("Copy Out GPU", numberThreads, false, false)
     {}
 
     void execute(std::shared_ptr<CudaMatrixLine<Type, Id>> ptr) override {
@@ -25,7 +25,7 @@ class CudaCopyOutGPU: public hh::AbstractCUDATask<CudaCopyOutGPUNbIn, CudaCopyOu
 
     std::shared_ptr<hh::AbstractTask<CudaCopyOutGPUNbIn, CudaCopyOutGPUInput, CudaCopyOutGPUOutput>>
     copy() override {
-        return std::make_shared<CudaCopyOutGPU<Type, Id>>();
+        return std::make_shared<CudaCopyOutGPU<Type, Id>>(this->numberThreads());
     }
 };
 

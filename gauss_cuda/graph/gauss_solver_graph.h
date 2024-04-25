@@ -23,8 +23,8 @@ class GaussSolverGraph: public hh::Graph<GaussSolverGraphInNb, GaussSolverGraphI
         hh::Graph<GaussSolverGraphInNb, GaussSolverGraphInput, GaussSolverGraphOutput>("Solver graph")
     {
         // cuda tasks
-        auto copyLineInGPU = std::make_shared<CudaCopyInGPU<Type>>(size, size);
-        auto copyLineOutGPU = std::make_shared<CudaCopyOutGPU<Type, SubstractedLine>>();
+        auto copyLineInGPU = std::make_shared<CudaCopyInGPU<Type>>(size, size, nbThreads);
+        auto copyLineOutGPU = std::make_shared<CudaCopyOutGPU<Type, SubstractedLine>>(nbThreads);
         auto subLineTask = std::make_shared<CudaSubstractLinesTask<Type>>(nbThreads);
         // states
         auto solverState = std::make_shared<SolverState<Type>>(size);
