@@ -30,8 +30,8 @@ class GaussPivotGraph: public hh::Graph<GaussPivotGraphInNb, GaussPivotGraphInpu
         auto splitMatrixTask = std::make_shared<SplitMatrixTask<Type>>();
         auto divideLineTask = std::make_shared<DivideLineTask<Type>>(nbThreads);
         // cuda tasks
-        auto copyLineInGPU = std::make_shared<CudaCopyInGPU<Type>>(size, size);
-        auto copyLineOutGPU = std::make_shared<CudaCopyOutGPU<Type, SubstractedLine>>();
+        auto copyLineInGPU = std::make_shared<CudaCopyInGPU<Type>>(size, size, nbThreads);
+        auto copyLineOutGPU = std::make_shared<CudaCopyOutGPU<Type, SubstractedLine>>(nbThreads);
         auto subLineTask = std::make_shared<CudaSubstractLinesTask<Type>>(nbThreads);
         // states
         auto pivotState = std::make_shared<PivotState<Type>>(size);

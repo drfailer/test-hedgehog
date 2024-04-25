@@ -22,8 +22,8 @@ class CudaCopyInGPU:
     public hh::AbstractCUDATask<CudaCopyInGPUNbIn, CudaCopyInGPUInput, CudaCopyInGPUOutput>
 {
   public:
-    CudaCopyInGPU(size_t lineTTL, size_t lineSize):
-        hh::AbstractCUDATask<CudaCopyInGPUNbIn, CudaCopyInGPUInput, CudaCopyInGPUOutput>("Copy In GPU", 1, false, false),
+    CudaCopyInGPU(size_t lineTTL, size_t lineSize, size_t numberThreads):
+        hh::AbstractCUDATask<CudaCopyInGPUNbIn, CudaCopyInGPUInput, CudaCopyInGPUOutput>("Copy In GPU", numberThreads, false, false),
         lineTTL_(lineTTL),
         lineSize_(lineSize)
     {}
@@ -53,7 +53,7 @@ class CudaCopyInGPU:
 
     std::shared_ptr<hh::AbstractTask<CudaCopyInGPUNbIn, CudaCopyInGPUInput, CudaCopyInGPUOutput>>
     copy() override {
-        return std::make_shared<CudaCopyInGPU<Type>>(this->lineTTL_, this->lineSize_);
+        return std::make_shared<CudaCopyInGPU<Type>>(this->lineTTL_, this->lineSize_, this->numberThreads());
     }
 
   private: // TODO: may be useless
